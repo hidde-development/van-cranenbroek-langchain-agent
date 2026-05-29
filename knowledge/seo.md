@@ -65,3 +65,16 @@ URL-bronnen: hoofdpagina's onderaan dit bestand, productpagina's in `knowledge.m
 - Koppen = volledige vraag of stelling. Vraagkop → direct antwoord in eerste zin.
 - Nooit starten met "het", "deze", "hij", "zij" als onderwerp al in vorige zin stond.
 - Geen fluff. Vervang "beste", "hoogwaardig", "veel" door feiten en cijfers.
+
+## Hoofdpagina's voor interne linking
+
+Onderstaande URL's zijn LIVE.
+
+Gebruik als ankerpunt. Kies meest inhoudelijk relevante URL.
+### Navigatie
+
+- /nl-nl/werkkleding/werkkleding
+- /nl-nl/werkkleding/werkkleding
+- /nl-nl/werkkleding/werkschoenen
+- /nl-nl/werkkleding/accessoires-werkkleding
+- /nl-nl/werkkleding/pbm
