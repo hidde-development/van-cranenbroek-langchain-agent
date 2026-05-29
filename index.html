@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Van Cranenbroek Content Agent</title>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --purple: #6331F4;
+      --purple-deep: #4E23C9;
+      --purple-light: #E2DBFF;
+      --purple-lighter: #EEE9FF;
+      --near-black: #22222D;
+      --dark-grey: #555E63;
+      --mid-grey: #8C99AA;
+      --light-grey: #DCE0E6;
+      --off-white: #F4F4F6;
+      --white: #FFFFFF;
+      --shadow-sm: 0 1px 2px rgba(34, 34, 45, 0.04), 0 1px 3px rgba(34, 34, 45, 0.03);
+      --shadow-md: 0 2px 4px rgba(34, 34, 45, 0.04), 0 4px 12px rgba(34, 34, 45, 0.04);
+      --gradient-purple: linear-gradient(135deg, #6331F4 0%, #4E23C9 100%);
+      --gradient-purple-soft: linear-gradient(135deg, #EEE9FF 0%, #E2DBFF 100%);
+      --gradient-header: linear-gradient(135deg, #22222D 0%, #2B2540 100%);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Epilogue', Calibri, sans-serif;
+      color: var(--near-black);
+      min-height: 100vh;
+      background: var(--off-white);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99, 49, 244, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 100% 20%, rgba(99, 49, 244, 0.04) 0%, transparent 60%);
+      background-attachment: fixed;
+    }
+    header {
+      background: var(--gradient-header);
+      padding: 24px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(99, 49, 244, 0.15);
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-mark {
+      width: 36px; height: 36px; background: var(--gradient-purple);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; color: white; border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(99, 49, 244, 0.35);
+    }
+    .logo-text { color: white; font-size: 16px; font-weight: 600; }
+    .logo-sub { color: var(--mid-grey); font-size: 13px; }
+    .api-key-wrap { display: flex; align-items: center; gap: 10px; }
+    .api-key-wrap label { color: var(--mid-grey); font-size: 13px; }
+    .api-key-wrap input {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px; padding: 7px 12px; color: white; font-size: 13px;
+      font-family: monospace; width: 220px;
+    }
+    .api-key-wrap input::placeholder { color: var(--mid-grey); }
+
+    nav {
+      background: var(--white);
+      border-bottom: 1px solid var(--light-grey);
+      padding: 0 48px; display: flex; gap: 0;
+    }
+    .nav-tab {
+      padding: 16px 24px; font-size: 14px; font-weight: 600; cursor: pointer;
+      border-bottom: 3px solid transparent; color: var(--dark-grey);
+      transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none;
+    }
+    .nav-tab:hover { color: var(--near-black); }
+    .nav-tab.active { color: var(--purple); border-bottom-color: var(--purple); }
+
+    main { max-width: 900px; margin: 0 auto; padding: 56px 24px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    h1 { font-size: 38px; font-weight: 300; margin-bottom: 14px; letter-spacing: -0.02em; line-height: 1.15; }
+    .page-sub { color: var(--dark-grey); font-size: 16px; margin-bottom: 48px; line-height: 1.65; max-width: 640px; }
+
+    .card {
+      position: relative;
+      background: white; border-radius: 20px; padding: 44px 48px;
+      margin-bottom: 32px; border: 1px solid rgba(220, 224, 230, 0.7);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.25s ease, transform 0.25s ease;
+      overflow: hidden;
+    }
+    .card::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--gradient-purple); opacity: 0.9;
+    }
+    .card:hover { box-shadow: var(--shadow-md); }
+    .card-header { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 28px; }
+    .card-icon {
+      width: 52px; height: 52px; background: var(--gradient-purple);
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+      box-shadow: 0 6px 18px rgba(99, 49, 244, 0.28), inset 0 1px 0 rgba(255,255,255,0.2);
+      color: white;
+    }
+    .card-title { font-size: 20px; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.01em; }
+    .card-desc { font-size: 14.5px; color: var(--dark-grey); line-height: 1.7; }
+    .card-when {
+      background: linear-gradient(135deg, rgba(238, 233, 255, 0.45) 0%, rgba(226, 219, 255, 0.3) 100%);
+      border-radius: 12px; padding: 16px 20px;
+      font-size: 13.5px; color: var(--dark-grey); margin-bottom: 28px;
+      border: 1px solid rgba(99, 49, 244, 0.12);
+      line-height: 1.6;
+    }
+    .card-when strong { color: var(--purple-deep); font-weight: 600; }
+
+    .form-row { margin-bottom: 24px; }
+    label {
+      display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px;
+      color: var(--near-black); letter-spacing: 0.02em; text-transform: uppercase;
+    }
+    .hint { font-size: 13px; color: var(--mid-grey); margin-bottom: 10px; line-height: 1.5; }
+    input[type=text], input[type=url], textarea, select {
+      width: 100%; padding: 13px 16px; border: 1px solid rgba(220, 224, 230, 0.8);
+      border-radius: 10px; font-size: 14.5px; font-family: inherit;
+      color: var(--near-black); background: rgba(255, 255, 255, 0.9);
+      transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    input[type=text]:hover, input[type=url]:hover, textarea:hover, select:hover {
+      border-color: rgba(99, 49, 244, 0.25);
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none; border-color: var(--purple); background: white;
+      box-shadow: 0 0 0 4px rgba(99, 49, 244, 0.1);
+    }
+    textarea { resize: vertical; min-height: 96px; line-height: 1.65; }
+    .form-row textarea.mono { font-family: monospace; font-size: 13px; }
+
+    .btn-group-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .sheet-picker-row input { font-family: 'Epilogue', Calibri, sans-serif; }
+    .briefing-panel {
+      background: linear-gradient(135deg, rgba(238,233,255,0.55) 0%, rgba(226,219,255,0.4) 100%);
+      border: 1px solid rgba(99,49,244,0.2);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 24px;
+      font-size: 13.5px;
+      color: var(--dark-grey);
+    }
+    .briefing-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .briefing-title { font-weight: 600; color: var(--purple-deep); font-size: 13px; letter-spacing: 0.02em; text-transform: uppercase; }
+    .briefing-clear {
+      background: none; border: 1px solid rgba(99,49,244,0.3); color: var(--purple-deep);
+      padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: inherit;
+    }
+    .briefing-clear:hover { background: rgba(99,49,244,0.1); }
+    .briefing-body > div { padding: 4px 0; line-height: 1.55; }
+    .briefing-body strong { color: var(--near-black); font-weight: 600; min-width: 110px; display: inline-block; }
+    .briefing-body code { background: rgba(255,255,255,0.6); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+    .btn-opt {
+      padding: 10px 18px; border: 1px solid rgba(220, 224, 230, 0.8); border-radius: 10px;
+      font-size: 13px; font-weight: 600; cursor: pointer; background: white;
+      color: var(--dark-grey); transition: all 0.2s ease;
+    }
+    .btn-opt:hover { border-color: var(--purple); color: var(--purple); transform: translateY(-1px); }
+    .btn-opt.sel {
+      background: var(--gradient-purple); border-color: transparent; color: white;
+      box-shadow: 0 4px 12px rgba(99, 49, 244, 0.28);
+    }
+
+    .btn-primary {
+      background: var(--gradient-purple); color: white; border: none; border-radius: 12px;
+      padding: 14px 28px; font-size: 15px; font-weight: 600; cursor: pointer;
+      font-family: inherit; transition: transform 0.15s ease, box-shadow 0.15s ease;
+      width: 100%; margin-top: 12px;
+      box-shadow: 0 2px 8px rgba(99, 49, 244, 0.25);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(99, 49, 244, 0.32); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; transform: none; }
+    .btn-secondary {
+      background: white; color: var(--purple); border: 1.5px solid var(--purple);
+      border-radius: 10px; padding: 10px 20px; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    .btn-secondary:hover { background: var(--purple-light); }
+
+    .output-box {
+      display: none; margin-top: 20px; border: 1.5px solid var(--light-grey);
+      border-radius: 10px; overflow: hidden;
+    }
+    .output-box.show { display: block; }
+    .output-header {
+      background: var(--off-white); padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--light-grey);
+    }
+    .output-label { font-size: 13px; font-weight: 600; color: var(--dark-grey); }
+    .output-content {
+      padding: 20px; font-size: 14px; line-height: 1.7;
+      max-height: 500px; overflow-y: auto; color: var(--near-black);
+    }
+    .output-content h1 { font-size: 20px; font-weight: 700; margin: 0 0 12px; }
+    .output-content h2 { font-size: 16px; font-weight: 600; margin: 20px 0 8px; color: var(--dark-grey); }
+    .output-content h3 { font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
+    .output-content h4 { font-size: 13px; font-weight: 600; margin: 10px 0 4px; }
+    .output-content p  { margin: 0 0 10px; }
+    .output-content ul, .output-content ol { padding-left: 22px; margin: 0 0 10px; }
+    .output-content li { margin-bottom: 4px; }
+    .output-content hr { border: none; border-top: 1px solid var(--light-grey); margin: 18px 0; }
+    .output-content code { background: var(--off-white); border-radius: 3px; padding: 1px 5px; font-family: monospace; font-size: 12px; }
+    .output-content strong { font-weight: 600; }
+    .output-content.raw-mode { font-family: monospace; white-space: pre-wrap; font-size: 12px; }
+    .status-bar {
+      padding: 12px 16px; border-radius: 8px; font-size: 14px;
+      margin-top: 12px; display: none;
+    }
+    .status-bar.show { display: block; }
+    .status-bar.info { background: var(--purple-light); color: var(--purple); }
+    .status-bar.success { background: #E6F7EE; color: #1A7A45; }
+    .status-bar.error { background: #FEE8E8; color: #C0392B; }
+    .status-bar.warn  { background: #FFF8E1; color: #92400E; }
+
+    .progress-wrap { margin-top: 16px; display: none; }
+    .progress-wrap.show { display: block; }
+    .progress-bar-bg { background: var(--light-grey); border-radius: 99px; height: 8px; margin: 8px 0; }
+    .progress-bar-fill { background: var(--gradient-purple); border-radius: 99px; height: 8px; transition: width 0.4s; }
+    .progress-label { font-size: 13px; color: var(--dark-grey); }
+
+    .results-list { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .result-item { border: 1px solid var(--light-grey); border-radius: 8px; overflow: hidden; }
+    .result-item-header {
+      padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+      background: var(--off-white); font-size: 13px; cursor: pointer;
+    }
+    .result-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .result-dot.ok { background: #27AE60; }
+    .result-dot.err { background: #E74C3C; }
+    .result-url { font-weight: 600; flex: 1; }
+    .result-body { display: none; padding: 14px; font-size: 13px; line-height: 1.6; border-top: 1px solid var(--light-grey); max-height: 300px; overflow-y: auto; }
+    .result-body.open { display: block; }
+    .result-body h1 { font-size: 16px; font-weight: 700; margin: 0 0 8px; }
+    .result-body h2 { font-size: 14px; font-weight: 600; margin: 12px 0 6px; color: var(--dark-grey); }
+    .result-body h3, .result-body h4 { font-size: 13px; font-weight: 600; margin: 8px 0 4px; }
+    .result-body p  { margin: 0 0 8px; }
+    .result-body ul, .result-body ol { padding-left: 18px; margin: 0 0 8px; }
+    .result-body li { margin-bottom: 3px; }
+    .result-body hr { border: none; border-top: 1px solid var(--light-grey); margin: 10px 0; }
+    .result-body code { background: var(--off-white); border-radius: 3px; padding: 1px 4px; font-family: monospace; font-size: 11px; }
+    .result-body strong { font-weight: 600; }
+
+    /* Bulk page selector */
+    .bulk-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .bulk-toolbar .btn-secondary { padding: 6px 14px; font-size: 12px; border-radius: 7px; }
+    .bulk-toolbar input { flex: 1; min-width: 140px; font-size: 12px; padding: 6px 10px; border: 1px solid var(--light-grey); border-radius: 7px; font-family: inherit; outline: none; }
+    .bulk-toolbar input:focus { border-color: var(--purple); }
+    .sel-count { font-size: 12px; color: var(--mid-grey); white-space: nowrap; }
+    .page-list { max-height: 220px; overflow-y: auto; border: 1px solid var(--light-grey); border-radius: 8px; background: white; }
+    .page-list-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-bottom: 1px solid var(--light-grey); font-size: 12px; cursor: pointer; user-select: none; }
+    .page-list-item:last-child { border-bottom: none; }
+    .page-list-item:hover { background: var(--off-white); }
+    .page-list-item input[type=checkbox] { flex-shrink: 0; cursor: pointer; accent-color: var(--purple); }
+    .pl-url { flex: 1; font-family: monospace; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tpl-badge { font-size: 10px; background: var(--purple-light); color: var(--purple); padding: 2px 6px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; font-weight: 600; }
+    .pl-kw { font-size: 11px; color: var(--mid-grey); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+
+    .api-card {
+      background: white; border-radius: 16px; padding: 28px 32px;
+      margin-bottom: 20px; border: 1px solid var(--light-grey);
+      box-shadow: var(--shadow-sm);
+    }
+    .api-method {
+      display: inline-block; background: var(--gradient-purple); color: white;
+      font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+      margin-right: 8px; vertical-align: middle;
+    }
+    .api-path { font-family: monospace; font-size: 15px; font-weight: 600; vertical-align: middle; }
+    .api-desc { font-size: 14px; color: var(--dark-grey); margin: 10px 0; line-height: 1.6; }
+    .api-fields { margin-top: 12px; }
+    .api-fields table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .api-fields th { text-align: left; padding: 6px 10px; background: var(--off-white); color: var(--dark-grey); font-weight: 600; }
+    .api-fields td { padding: 6px 10px; border-top: 1px solid var(--light-grey); vertical-align: top; }
+    .api-fields code { font-family: monospace; background: var(--off-white); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+    .tag-required { font-size: 10px; background: #FFF3CD; color: #856404; padding: 1px 5px; border-radius: 3px; font-weight: 600; }
+    .tag-optional { font-size: 10px; background: var(--off-white); color: var(--mid-grey); padding: 1px 5px; border-radius: 3px; }
+
+    .redirect-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+    .redirect-table th { text-align: left; padding: 8px 12px; background: var(--near-black); color: white; font-weight: 600; }
+    .redirect-table td { padding: 8px 12px; border-top: 1px solid var(--light-grey); font-family: monospace; }
+    .conf-high { color: #27AE60; font-weight: 600; }
+    .conf-mid { color: #F39C12; font-weight: 600; }
+    .conf-low { color: #E74C3C; font-weight: 600; }
+
+    .divider { height: 1px; background: var(--light-grey); margin: 44px 0; }
+    .section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--mid-grey); margin-bottom: 16px;
+    }
+
+    /* Review verdict */
+    .verdict-bar {
+      display: flex; align-items: center; gap: 14px; padding: 18px 20px;
+      border-radius: 14px; margin-top: 20px; font-size: 14px;
+      border: 1px solid transparent;
+    }
+    .verdict-bar.green  { background: linear-gradient(135deg, rgba(230,247,238,0.9), rgba(200,235,215,0.6)); border-color: rgba(26,122,69,0.2); color: #1A7A45; }
+    .verdict-bar.orange { background: linear-gradient(135deg, rgba(255,243,205,0.9), rgba(255,228,168,0.6)); border-color: rgba(200,140,20,0.25); color: #8a5a00; }
+    .verdict-bar.red    { background: linear-gradient(135deg, rgba(254,232,232,0.9), rgba(250,210,210,0.6)); border-color: rgba(192,57,43,0.25); color: #9b2a1e; }
+    .verdict-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 4px rgba(255,255,255,0.5); }
+    .verdict-dot.green  { background: #2ECC71; }
+    .verdict-dot.orange { background: #F39C12; }
+    .verdict-dot.red    { background: #E74C3C; }
+    .verdict-title { font-weight: 700; font-size: 15px; }
+    .verdict-summary { margin-top: 2px; opacity: 0.9; }
+
+    .revise-badge {
+      display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; padding: 3px 9px; border-radius: 99px;
+      background: var(--purple-light); color: var(--purple-deep); margin-left: 8px;
+    }
+
+    .reports-wrap { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .report {
+      border: 1px solid var(--light-grey); border-radius: 12px; overflow: hidden;
+      background: white;
+    }
+    .report-header {
+      padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      background: linear-gradient(135deg, rgba(244,244,246,0.6) 0%, rgba(255,255,255,1) 100%);
+    }
+    .report-role { flex: 1; color: var(--near-black); }
+    .report-role-tag {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; padding: 2px 8px; border-radius: 4px;
+      background: var(--purple-light); color: var(--purple-deep);
+    }
+    .report-summary { color: var(--dark-grey); font-weight: 400; font-size: 13px; }
+    .report-body { display: none; padding: 0 16px 16px; }
+    .report-body.open { display: block; }
+    /* Checklist-stijl voor critic-rapporten */
+    .revised-note { background: #E6F7EE; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #1A7A45; margin-bottom: 10px; }
+    .check-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--light-grey); align-items: flex-start; }
+    .check-item:last-child { border-bottom: none; }
+    .check-icon { font-size: 15px; flex-shrink: 0; line-height: 1.4; }
+    .check-text { flex: 1; min-width: 0; }
+    .check-text strong { display: block; font-size: 13px; font-weight: 600; color: var(--near-black); margin-bottom: 2px; }
+    .check-text span { font-size: 12px; color: var(--dark-grey); line-height: 1.5; }
+    .check-empty { font-size: 13px; color: var(--mid-grey); padding: 8px 0; }
+    /* Oud: behoud voor eventuele backward compat */
+    .flag {
+      padding: 10px 12px; border-radius: 8px; margin-top: 8px; font-size: 13px;
+      border-left: 3px solid var(--mid-grey);
+      background: var(--off-white);
+    }
+    .flag.blocker  { border-left-color: #E74C3C; background: rgba(254,232,232,0.5); }
+    .flag.revise   { border-left-color: #F39C12; background: rgba(255,243,205,0.4); }
+    .flag.optional { border-left-color: var(--mid-grey); background: var(--off-white); }
+    .flag-issue { font-weight: 600; color: var(--near-black); }
+    .flag-suggestion { margin-top: 4px; color: var(--dark-grey); line-height: 1.5; }
+    .flag-severity {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      padding: 1px 6px; border-radius: 3px; margin-right: 6px;
+      letter-spacing: 0.06em;
+    }
+    .flag.blocker .flag-severity  { background: #E74C3C; color: white; }
+    .flag.revise .flag-severity   { background: #F39C12; color: white; }
+    .flag.optional .flag-severity { background: var(--light-grey); color: var(--dark-grey); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">→</div>
+    <div>
+      <div class="logo-text">Van Cranenbroek Content Agent</div>
+      <div class="logo-sub">Aangedreven door Goldfizh</div>
+    </div>
+  </div>
+  <div class="api-key-wrap">
+    <label for="api-key-input">API key</label>
+    <input type="text" id="api-key-input" placeholder="Laat leeg als niet vereist" />
+  </div>
+</header>
+
+<nav>
+  <button class="nav-tab active" onclick="switchTab('schrijf')">Schrijf pagina</button>
+  
+  <button class="nav-tab" onclick="switchTab('api')">API overzicht</button>
+</nav>
+
+<main>
+
+  <div class="tab-panel active" id="tab-schrijf">
+    <h1>Schrijf een pagina</h1>
+    <p class="page-sub">Geef de agent een opdracht en hij schrijft een productieklare webpagina op basis van het merkprofiel, SEO-richtlijnen en de templates van Van Cranenbroek.</p>
+    
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">✍️</div>
+        <div>
+          <div class="card-title">Nieuwe pagina schrijven</div>
+          <div class="card-desc">De agent laadt automatisch alle merkregels, SEO-richtlijnen en templates. Jij geeft alleen de opdracht — hij schrijft de volledige pagina inclusief meta-titel en -beschrijving.</div>
+        </div>
+      </div>
+      <div class="card-when">
+        <strong>Gebruik dit voor:</strong> het schrijven van nieuwe dienst-, product- of artikelpagina's, cases en social proof snippets. De agent raadpleegt altijd eerst de kennisbank.
+      </div>
+
+      <div class="form-row sheet-picker-row" id="sheet-picker-row" style="display:none">
+        <label>Kies pagina uit SEO-strategie <span style="font-weight:400;color:var(--mid-grey);text-transform:none;letter-spacing:normal">(0 pagina's)</span></label>
+        <div class="hint">Begin te typen om te zoeken. Bij selectie worden URL, keywords, bronnen en context automatisch ingevuld.</div>
+        <input type="text" id="w-sheet-search" list="sheet-urls" placeholder="bv. /letselschade — typ deel van URL of zoekwoord" oninput="loadSheetBriefing()" autocomplete="off" />
+        <datalist id="sheet-urls"></datalist>
+      </div>
+
+      <div class="briefing-panel" id="briefing-panel" style="display:none">
+        <div class="briefing-head">
+          <span class="briefing-title">Briefing geladen</span>
+          <button class="briefing-clear" onclick="clearBriefing()">Wissen</button>
+        </div>
+        <div class="briefing-body" id="briefing-body"></div>
+      </div>
+
+      <div class="form-row">
+        <label>Paginatype</label>
+        <div class="btn-group-row" id="pagetype-group">
+          <button class="btn-opt sel" data-value="dienstpagina" onclick="selectPagetype(this)">Dienstpagina</button>
+          <button class="btn-opt" data-value="productpagina" onclick="selectPagetype(this)">Productpagina</button>
+          <button class="btn-opt" data-value="artikelpagina" onclick="selectPagetype(this)">Artikelpagina</button>
+          <button class="btn-opt" data-value="case" onclick="selectPagetype(this)">Case</button>
+          <button class="btn-opt" data-value="social proof snippet" onclick="selectPagetype(this)">Social proof</button>
+          <button class="btn-opt" data-value="overig" onclick="selectPagetype(this)">Overig</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Stijl</label>
+        <div class="hint">Hoe moet de pagina klinken? De schrijver past zijn ritme en opbouw hierop aan.</div>
+        <div class="btn-group-row" id="style-group">
+          <button class="btn-opt sel" data-value="feitelijk" onclick="selectStyle(this)">Feitelijk</button>
+          <button class="btn-opt" data-value="verhalend" onclick="selectStyle(this)">Verhalend</button>
+          <button class="btn-opt" data-value="autoriteit" onclick="selectStyle(this)">Autoriteit</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>URL van de pagina</label>
+        <div class="hint">De toekomstige URL — ook als de pagina nog niet bestaat.</div>
+        <input type="url" id="w-url" placeholder="https://www.voorbeeld.nl/diensten/voorbeeld-dienst" />
+      </div>
+      <div class="form-row">
+        <label>Zoekwoorden</label>
+        <div class="hint">Primair zoekwoord eerst, daarna secundaire, kommagescheiden.</div>
+        <input type="text" id="w-keywords" placeholder="primair zoekwoord, secundair zoekwoord" />
+      </div>
+      <div class="form-row">
+        <label>Opdracht / brief</label>
+        <div class="hint">Wat moet de pagina doen, wat is de context, zijn er specifieke punten die erin moeten?</div>
+        <textarea id="w-brief" rows="4" placeholder="Beschrijf de opdracht, doelgroep en eventuele specifieke punten…"></textarea>
+      </div>
+      <div class="form-row">
+        <label>Bronpagina's ophalen (optioneel)</label>
+        <div class="hint">URL's van bestaande pagina's die als bron dienen — één per regel. De agent haalt ze op en verwerkt ze.</div>
+        <textarea id="w-sources" class="mono" rows="3" placeholder="https://www.voorbeeld.nl/&#10;https://www.voorbeeld.nl/over-ons"></textarea>
+      </div>
+      <button class="btn-primary" onclick="schrijfPagina(this)">Schrijf pagina</button>
+      <div class="status-bar" id="w-status"></div>
+      <div class="status-bar" id="w-source-warn"></div>
+      <div id="w-verdict-wrap" style="display:none">
+        <div class="verdict-bar" id="w-verdict">
+          <div class="verdict-dot" id="w-verdict-dot"></div>
+          <div style="flex:1">
+            <div class="verdict-title" id="w-verdict-title"></div>
+            <div class="verdict-summary" id="w-verdict-summary"></div>
+          </div>
+          <button class="btn-secondary" id="w-publish-btn" onclick="publishPage(this)" style="display:none">↑ Publiceer concept</button>
+        </div>
+        <div class="reports-wrap" id="w-reports"></div>
+      </div>
+      <div class="output-box" id="w-meta-output" style="display:none;margin-bottom:12px">
+        <div class="output-header">
+          <span class="output-label">Meta-velden</span>
+          <button class="btn-secondary" onclick="copyAllMeta()" title="Kopieer alle meta-velden als TSV (handig voor bulk-import in CMS)">Kopieer alle</button>
+        </div>
+        <div class="meta-grid" style="padding:14px 18px;display:grid;grid-template-columns:1fr;gap:12px">
+          <div class="meta-row" id="w-meta-title-row" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+              <label style="font-size:11px;font-weight:600;color:var(--mid-grey);text-transform:uppercase;letter-spacing:0.06em">Meta title</label>
+              <span style="font-size:11px;color:var(--mid-grey)"><span id="w-meta-title-len">0</span>/60</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="w-meta-title" readonly style="flex:1;font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--light-grey);border-radius:6px;background:var(--off-white);color:var(--near-black)" />
+              <button class="btn-secondary" onclick="copyMetaField('w-meta-title')" style="padding:8px 12px">Kopieer</button>
+            </div>
+          </div>
+          <div class="meta-row" id="w-meta-desc-row" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+              <label style="font-size:11px;font-weight:600;color:var(--mid-grey);text-transform:uppercase;letter-spacing:0.06em">Meta description</label>
+              <span style="font-size:11px;color:var(--mid-grey)"><span id="w-meta-desc-len">0</span>/155</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <textarea id="w-meta-desc" readonly rows="2" style="flex:1;font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--light-grey);border-radius:6px;background:var(--off-white);color:var(--near-black);resize:vertical"></textarea>
+              <button class="btn-secondary" onclick="copyMetaField('w-meta-desc')" style="padding:8px 12px">Kopieer</button>
+            </div>
+          </div>
+          <div class="meta-row" id="w-meta-slug-row" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+              <label style="font-size:11px;font-weight:600;color:var(--mid-grey);text-transform:uppercase;letter-spacing:0.06em">Slug</label>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="w-meta-slug" readonly style="flex:1;font-family:monospace;font-size:13px;padding:8px 10px;border:1px solid var(--light-grey);border-radius:6px;background:var(--off-white);color:var(--near-black)" />
+              <button class="btn-secondary" onclick="copyMetaField('w-meta-slug')" style="padding:8px 12px">Kopieer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="output-box" id="w-output">
+        <div class="output-header">
+          <span class="output-label">Pagina-content</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn-secondary" id="w-raw-btn" onclick="toggleRawContent()" title="Schakel tussen rendered preview en raw markdown">Raw</button>
+            <button class="btn-secondary" onclick="copyOutput('w-content')" title="Plakken in CMS rich-text editor → echte hyperlinks. Plakken in markdown-editor → markdown-source als fallback.">Kopieer</button>
+          </div>
+        </div>
+        <div class="output-content" id="w-content"></div>
+      </div>
+    </div>
+  </div>
+
+  
+
+  <div class="tab-panel" id="tab-api">
+    <h1>API overzicht</h1>
+    <p class="page-sub">Alle beschikbare endpoints van de Van Cranenbroek Content Agent. Gebruik <code>Authorization: Bearer {API_KEY}</code> als authenticatie is ingesteld.</p>
+
+    <div class="api-card">
+      <div><span class="api-method">POST</span><span class="api-path">/api/agent</span></div>
+      <div class="api-desc">Schrijft één productieklare webpagina op basis van merkregels, SEO-richtlijnen en templates.</div>
+      <div class="api-fields">
+        <table>
+          <tr><th>Veld</th><th>Type</th><th>Verplicht</th><th>Omschrijving</th></tr>
+          <tr><td><code>url</code></td><td>string</td><td><span class="tag-required">Verplicht</span></td><td>Toekomstige URL van de pagina</td></tr>
+          <tr><td><code>pageType</code></td><td>string</td><td><span class="tag-optional">Optioneel</span></td><td>dienstpagina / productpagina / artikelpagina / case / social proof snippet / overig</td></tr>
+          <tr><td><code>style</code></td><td>string</td><td><span class="tag-optional">Optioneel</span></td><td>feitelijk / verhalend / autoriteit (standaard: feitelijk)</td></tr>
+          <tr><td><code>keywords</code></td><td>string</td><td><span class="tag-optional">Optioneel</span></td><td>Zoekwoorden, kommagescheiden</td></tr>
+          <tr><td><code>brief</code></td><td>string</td><td><span class="tag-optional">Optioneel</span></td><td>Schrijfopdracht of context</td></tr>
+          <tr><td><code>sources</code></td><td>string[]</td><td><span class="tag-optional">Optioneel</span></td><td>URL's van bronpagina's — agent haalt ze op en consolideert</td></tr>
+        </table>
+      </div>
+    </div>
+    
+    
+  </div>
+
+</main>
+
+<script>
+  // Sheet-data uit SEO-strategie (null als geen sheet bij build)
+  window.__SHEET_PAGES__ = null;
+
+  let pagetypeValue = 'dienstpagina';
+  let styleValue = 'feitelijk';
+  let migratePagetype = 'dienstpagina';
+  let redirectPermanent = true;
+  let importOp = 'create';
+  let bulkRunning = false;
+  let lastPage = null;
+  let lastVerdict = null;
+  let activeBriefing = null;
+
+  function authHeaders() {
+    const key = document.getElementById('api-key-input').value.trim();
+    const h = { 'Content-Type': 'application/json' };
+    if (key) h['Authorization'] = 'Bearer ' + key;
+    return h;
+  }
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  function selectPagetype(btn) {
+    document.querySelectorAll('#pagetype-group .btn-opt').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    pagetypeValue = btn.dataset.value;
+  }
+  function selectStyle(btn) {
+    document.querySelectorAll('#style-group .btn-opt').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    styleValue = btn.dataset.value;
+  }
+  function selectMigratePagetype(btn) {
+    document.querySelectorAll('#migrate-pagetype-group .btn-opt').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    migratePagetype = btn.dataset.value;
+  }
+  function selectRedirectType(btn) {
+    document.querySelectorAll('#redirect-type-group .btn-opt').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    redirectPermanent = btn.dataset.value === 'true';
+  }
+  function selectImportOp(btn) {
+    document.querySelectorAll('#import-op-group .btn-opt').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    importOp = btn.dataset.value;
+  }
+
+  function setStatus(id, msg, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'status-bar show ' + type;
+  }
+  function hideStatus(id) {
+    const el = document.getElementById(id);
+    if (el) el.className = 'status-bar';
+  }
+
+  // Dual-format clipboard: text/html (voor CMS WYSIWYG) + text/plain markdown
+  // (voor markdown-editors). De ontvangende app kiest het juiste formaat.
+  // Effect: plakken in Webflow/WordPress/Contentful → echte hyperlinks.
+  // Plakken in Obsidian/Notion/markdown-files → markdown-source behouden.
+  async function copyRichOrMd(md) {
+    if (!md) return;
+    try {
+      if (typeof ClipboardItem !== 'undefined' && navigator.clipboard.write) {
+        const html = renderMd(md);
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/html':  new Blob([html], { type: 'text/html' }),
+            'text/plain': new Blob([md],   { type: 'text/plain' }),
+          })
+        ]);
+        return;
+      }
+    } catch (_) { /* fallback below */ }
+    await navigator.clipboard.writeText(md);
+  }
+
+  function copyOutput(id) {
+    const el = document.getElementById(id);
+    copyRichOrMd(el.dataset.raw || el.textContent || '');
+  }
+
+  // Vult de meta-velden (title/description/slug) wanneer de agent ze meegestuurd heeft.
+  // Lege velden worden verborgen, lengtes worden geteld voor SEO-feedback.
+  function renderMetaFields(page) {
+    const wrap = document.getElementById('w-meta-output');
+    const mt = page.meta_title || page.title || '';
+    const md = page.meta_description || '';
+    const sl = page.slug || '';
+    const titleRow = document.getElementById('w-meta-title-row');
+    const descRow  = document.getElementById('w-meta-desc-row');
+    const slugRow  = document.getElementById('w-meta-slug-row');
+    if (mt) {
+      document.getElementById('w-meta-title').value = mt;
+      document.getElementById('w-meta-title-len').textContent = mt.length;
+      titleRow.style.display = '';
+    } else { titleRow.style.display = 'none'; }
+    if (md) {
+      document.getElementById('w-meta-desc').value = md;
+      document.getElementById('w-meta-desc-len').textContent = md.length;
+      descRow.style.display = '';
+    } else { descRow.style.display = 'none'; }
+    if (sl) {
+      document.getElementById('w-meta-slug').value = sl;
+      slugRow.style.display = '';
+    } else { slugRow.style.display = 'none'; }
+    wrap.style.display = (mt || md || sl) ? '' : 'none';
+  }
+
+  function copyMetaField(id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText(el.value || '');
+  }
+
+  // TSV-formaat: makkelijk te plakken in Excel-kolommen voor bulk-import in CMS.
+  function copyAllMeta() {
+    const mt = document.getElementById('w-meta-title').value || '';
+    const md = document.getElementById('w-meta-desc').value || '';
+    const sl = document.getElementById('w-meta-slug').value || '';
+    const tsv = 'meta_title\tmeta_description\tslug\n' + mt + '\t' + md + '\t' + sl;
+    navigator.clipboard.writeText(tsv);
+  }
+
+  // Minimale markdown → HTML renderer (geen externe afhankelijkheid)
+  // NB: deze functie staat in de outer template literal van lcGenFrontend(),
+  //     dus alle \n, \s, \d, \* zijn DUBBEL ge-escaped — anders eet de
+  //     template literal de eerste backslash en wordt de regex ongeldig.
+  function renderMd(md) {
+    if (!md) return '';
+    const safe = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const inline = s => safe(s)
+      .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*([^*\n]+?)\*/g,'<em>$1</em>')
+      .replace(/`([^`\n]+?)`/g,'<code>$1</code>');
+
+    const lines = md.split('\n');
+    const out = [];
+    let inUl = false, inOl = false, pBuf = [];
+
+    const flushP = () => { if (pBuf.length) { out.push('<p>' + pBuf.join(' ') + '</p>'); pBuf = []; } };
+    const closeUl = () => { if (inUl) { out.push('</ul>'); inUl = false; } };
+    const closeOl = () => { if (inOl) { out.push('</ol>'); inOl = false; } };
+    const closeLists = () => { closeUl(); closeOl(); };
+
+    for (const raw of lines) {
+      const t = raw.trim();
+      if (!t) { flushP(); closeLists(); continue; }
+      const hm = t.match(/^(#{1,4})\s+(.+)/);
+      if (hm) { flushP(); closeLists(); out.push('<h' + hm[1].length + '>' + inline(hm[2]) + '</h' + hm[1].length + '>'); continue; }
+      if (/^---+$/.test(t)) { flushP(); closeLists(); out.push('<hr>'); continue; }
+      const ulm = t.match(/^[-*]\s+(.*)/);
+      if (ulm) { flushP(); closeOl(); if (!inUl) { out.push('<ul>'); inUl = true; } out.push('<li>' + inline(ulm[1]) + '</li>'); continue; }
+      const olm = t.match(/^\d+\.\s+(.*)/);
+      if (olm) { flushP(); closeUl(); if (!inOl) { out.push('<ol>'); inOl = true; } out.push('<li>' + inline(olm[1]) + '</li>'); continue; }
+      closeLists();
+      pBuf.push(inline(t));
+    }
+    flushP(); closeLists();
+    return out.join('\n');
+  }
+
+  let _rawMode = false;
+  function toggleRawContent() {
+    _rawMode = !_rawMode;
+    const el = document.getElementById('w-content');
+    const btn = document.getElementById('w-raw-btn');
+    if (_rawMode) {
+      el.textContent = el.dataset.raw || '';
+      el.classList.add('raw-mode');
+      btn.textContent = 'Rendered';
+    } else {
+      el.innerHTML = renderMd(el.dataset.raw || '');
+      el.classList.remove('raw-mode');
+      btn.textContent = 'Raw';
+    }
+  }
+
+  // ── Sheet-picker: autocomplete + briefing-load ──
+  function escHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function initSheetPicker() {
+    const pages = window.__SHEET_PAGES__;
+    if (!pages || !pages.length) return;
+    document.getElementById('sheet-picker-row').style.display = '';
+    const dl = document.getElementById('sheet-urls');
+    dl.innerHTML = pages.map(p => {
+      const label = p.template
+        ? p.url + ' — ' + p.template + (p.primair ? ' (' + p.primair + ')' : '')
+        : p.url;
+      return '<option value="' + escHtml(p.url) + '">' + escHtml(label) + '</option>';
+    }).join('');
+    // Also populate the bulk selector on the migration tab (if present)
+    initBulkSelector();
+  }
+
+  function initBulkSelector() {
+    const pages = window.__SHEET_PAGES__;
+    const listEl = document.getElementById('m-page-list');
+    const selectorEl = document.getElementById('m-sheet-selector');
+    if (!pages || !pages.length || !listEl || !selectorEl) return;
+
+    // Build checkbox list
+    listEl.innerHTML = pages.map(p => {
+      const allKw = [p.primair, ...(p.secundair || []), ...(p.longtail || [])].filter(Boolean);
+      const kwPreview = allKw.slice(0, 2).join(', ');
+      return '<label class="page-list-item">'
+        + '<input type="checkbox" class="bulk-page-cb"'
+        + ' data-url="' + escHtml(p.url) + '"'
+        + ' data-kw="' + escHtml(allKw.join(', ')) + '"'
+        + ' data-tpl="' + escHtml(p.template || '') + '"'
+        + ' checked onchange="updateSelCount()" />'
+        + '<span class="pl-url">' + escHtml(p.url) + '</span>'
+        + (p.template ? '<span class="tpl-badge">' + escHtml(p.template) + '</span>' : '')
+        + (kwPreview ? '<span class="pl-kw">' + escHtml(kwPreview) + '</span>' : '')
+        + '</label>';
+    }).join('');
+
+    // Switch UI: hide textarea + global keywords, show selector
+    const urlsWrap = document.getElementById('m-urls-wrap');
+    const kwRow    = document.getElementById('m-keywords-row');
+    if (urlsWrap) urlsWrap.style.display = 'none';
+    if (kwRow)    kwRow.style.display    = 'none';
+    selectorEl.style.display = '';
+
+    updateSelCount();
+  }
+
+  function toggleAllPages(checked) {
+    document.querySelectorAll('.bulk-page-cb').forEach(cb => {
+      if (cb.closest('.page-list-item').style.display !== 'none') cb.checked = checked;
+    });
+    updateSelCount();
+  }
+
+  function filterBulkPages(query) {
+    const q = (query || '').toLowerCase();
+    document.querySelectorAll('.page-list-item').forEach(item => {
+      const url = (item.querySelector('.pl-url')  || {}).textContent || '';
+      const tpl = (item.querySelector('.tpl-badge') || {}).textContent || '';
+      item.style.display = (!q || url.toLowerCase().includes(q) || tpl.toLowerCase().includes(q)) ? '' : 'none';
+    });
+    updateSelCount();
+  }
+
+  function updateSelCount() {
+    const all     = document.querySelectorAll('.bulk-page-cb');
+    const checked = [...all].filter(cb => cb.checked).length;
+    const el = document.getElementById('m-sel-count');
+    if (el) el.textContent = checked + ' van ' + all.length + ' geselecteerd';
+  }
+
+  function getSelectedPages() {
+    return [...document.querySelectorAll('.bulk-page-cb:checked')].map(cb => ({
+      url: cb.dataset.url,
+      keywords: cb.dataset.kw || '',
+      templateCode: cb.dataset.tpl || null,
+    }));
+  }
+
+  function findSheetPage(query) {
+    const pages = window.__SHEET_PAGES__;
+    if (!pages) return null;
+    const q = String(query || '').trim();
+    if (!q) return null;
+    // Alleen exacte URL-match: de datalist zorgt voor selectie. Geen substring,
+    // anders flikkert de briefing tijdens typen.
+    return pages.find(p => p.url === q) || null;
+  }
+
+  function loadSheetBriefing() {
+    const search = document.getElementById('w-sheet-search');
+    const page = findSheetPage(search.value);
+    if (!page) return; // wacht tot gebruiker een match selecteert
+    if (activeBriefing && activeBriefing.url === page.url) return;
+
+    activeBriefing = page;
+
+    // Velden invullen
+    document.getElementById('w-url').value = page.url;
+    const allKeywords = [page.primair, ...page.secundair, ...page.longtail].filter(Boolean);
+    document.getElementById('w-keywords').value = allKeywords.join(', ');
+    document.getElementById('w-sources').value = page.bronnen.join('\n');
+
+    // Brief-veld vullen met context die de agent niet uit de kennisbank weet
+    const briefParts = [];
+    if (page.template) briefParts.push('Template: ' + page.template);
+    if (page.parent && page.parent !== '(homepage)') briefParts.push('Parent: ' + page.parent);
+    if (page.kinderen.length) briefParts.push('Cluster (kinderen): ' + page.kinderen.slice(0, 6).join(', ') + (page.kinderen.length > 6 ? ' …' : ''));
+    if (page.opmerking) briefParts.push('Strategische opmerking: ' + page.opmerking);
+    if (page.bronnen.length >= 2) briefParts.push('Consolidatiemodus: ' + page.bronnen.length + ' bronnen worden samengevoegd.');
+    document.getElementById('w-brief').value = briefParts.join('\n');
+
+    // Briefing-paneel tonen
+    const panel = document.getElementById('briefing-panel');
+    const body = document.getElementById('briefing-body');
+    body.innerHTML = ''
+      + (page.template ? '<div><strong>Template:</strong> <code>' + escHtml(page.template) + '</code></div>' : '')
+      + '<div><strong>Primair:</strong> ' + escHtml(page.primair || '(geen)') + '</div>'
+      + (page.secundair.length ? '<div><strong>Secundair:</strong> ' + escHtml(page.secundair.join(', ')) + '</div>' : '')
+      + (page.longtail.length ? '<div><strong>Long-tail:</strong> ' + escHtml(page.longtail.join(', ')) + '</div>' : '')
+      + (page.parent && page.parent !== '(homepage)' ? '<div><strong>Parent:</strong> ' + escHtml(page.parent) + '</div>' : '')
+      + (page.kinderen.length ? '<div><strong>Kinderen:</strong> ' + page.kinderen.length + ' pagina\'s</div>' : '')
+      + (page.bronnen.length ? '<div><strong>Bronnen:</strong> ' + page.bronnen.length + ' (consolidatie)</div>' : '')
+      + (page.opmerking ? '<div><strong>Opmerking:</strong> ' + escHtml(page.opmerking) + '</div>' : '');
+    panel.style.display = '';
+  }
+
+  function clearBriefing() {
+    activeBriefing = null;
+    document.getElementById('briefing-panel').style.display = 'none';
+    document.getElementById('w-sheet-search').value = '';
+    document.getElementById('w-url').value = '';
+    document.getElementById('w-keywords').value = '';
+    document.getElementById('w-brief').value = '';
+    document.getElementById('w-sources').value = '';
+  }
+
+  // Init bij DOMContentLoaded (script staat onderaan, dus DOM is al klaar)
+  initSheetPicker();
+
+  // Robuuste response parser: leest eerst als tekst, parseert daarna als JSON.
+  // Bij niet-JSON server-output (Vercel-error, HTML-fout) toont de error de
+  // echte server-body ipv de cryptische "Unexpected token 'A', is not valid JSON".
+  async function parseResponse(res) {
+    const text = await res.text();
+    if (!text) {
+      throw new Error('Server-fout (' + res.status + '): lege response.');
+    }
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      throw new Error('Server-fout (' + res.status + '): ' + text.slice(0, 400));
+    }
+  }
+
+  async function schrijfPagina(btn) {
+    const url = document.getElementById('w-url').value.trim();
+    const keywords = document.getElementById('w-keywords').value.trim();
+    const brief = document.getElementById('w-brief').value.trim();
+    const sourcesRaw = document.getElementById('w-sources').value.trim();
+    const sources = sourcesRaw ? sourcesRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+
+    if (!url) { setStatus('w-status', 'Vul een URL in.', 'error'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Bezig…';
+    setStatus('w-status', 'Agent schrijft — en review-pipeline (3 critics + synthesizer) loopt na afloop. Tel op ~60–120 seconden.', 'info');
+    hideStatus('w-source-warn');
+    document.getElementById('w-output').classList.remove('show');
+    document.getElementById('w-meta-output').style.display = 'none';
+    document.getElementById('w-verdict-wrap').style.display = 'none';
+    lastPage = null;
+    lastVerdict = null;
+
+    // Als een briefing is geladen: stuur templateCode mee zodat de agent
+    // templates/Tnn.md kan inlezen voor klantspecifieke paginastructuur.
+    const templateCode = activeBriefing && activeBriefing.template ? activeBriefing.template : null;
+
+    try {
+      const res = await fetch('/api/agent', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ url, pageType: pagetypeValue, keywords, brief, sources, style: styleValue, templateCode }),
+      });
+      const data = await parseResponse(res);
+      if (!res.ok || !data.success) throw new Error(data.error || 'Onbekende fout');
+      const _wContent = document.getElementById('w-content');
+      const _rawMd = data.content || '';
+      _wContent.dataset.raw = _rawMd;
+      _wContent.classList.remove('raw-mode');
+      _wContent.innerHTML = renderMd(_rawMd);
+      _rawMode = false;
+      const _rawBtn = document.getElementById('w-raw-btn');
+      if (_rawBtn) _rawBtn.textContent = 'Raw';
+      document.getElementById('w-output').classList.add('show');
+      renderMetaFields(data.page || {});
+      lastPage = data.page || { content: data.content };
+      lastVerdict = data.verdict || null;
+      if (data.verdict) {
+        renderVerdict(data);
+        hideStatus('w-status');
+      } else {
+        setStatus('w-status', '✓ Pagina gegenereerd. Controleer de inhoud vóór publicatie.', 'success');
+      }
+      // Warnings: nieuwe aggregated 'warnings' array heeft voorrang.
+      // Legacy: sourceWarnings + reviewWarning als fallback voor oudere deploys.
+      let warns = [];
+      if (Array.isArray(data.warnings) && data.warnings.length) {
+        warns = data.warnings.map(w => '⚠ ' + w);
+      } else {
+        if (data.sourceWarnings && data.sourceWarnings.length) {
+          warns.push('⚠ ' + data.sourceWarnings.length + ' bronpagina' + (data.sourceWarnings.length > 1 ? '\'s' : '') + ' niet bereikbaar (403/bot-block): ' + data.sourceWarnings.join(', '));
+        }
+        if (data.reviewWarning) {
+          warns.push('⚠ ' + data.reviewWarning);
+        }
+      }
+      if (warns.length) {
+        // Toon elke waarschuwing op een eigen regel — beter leesbaar dan ' | '-separator.
+        setStatus('w-source-warn', warns.join('\n'), 'warn');
+        document.getElementById('w-source-warn').style.whiteSpace = 'pre-line';
+      } else {
+        hideStatus('w-source-warn');
+      }
+    } catch (err) {
+      setStatus('w-status', 'Fout: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Schrijf pagina';
+    }
+  }
+
+  const ROLE_LABELS = { seo: 'SEO / GEO', brand: 'Brand', strategy: 'Strategy', legal: 'Juridisch', medical: 'Medisch', financial: 'Financieel', claims: 'Claims' };
+  const VERDICT_TEXT = {
+    green:  { title: 'Klaar voor publicatie', hint: 'Alle critics akkoord — geen openstaande punten.' },
+    orange: { title: 'Tekst bijgewerkt — controleer aandachtspunten', hint: 'De schrijfagent heeft alle critic-feedback verwerkt. Onderstaande punten zijn bijgewerkt; controleer of het resultaat klopt.' },
+    red:    { title: 'Tekst bijgewerkt — handmatige check vereist', hint: 'De schrijfagent heeft een revisiepoging gedaan, maar enkele blockers konden niet automatisch worden weggenomen. Zie hieronder welke punten nog openstaan.' },
+  };
+
+  // Vergelijk een V1-flag met de V2-flags-lijst om te bepalen of dit punt is verwerkt.
+  // Match heuristiek: zelfde issue-tekst (case-insensitive, fuzzy) → niet verwerkt.
+  // Geen match → succesvol verwerkt.
+  function isFlagResolved(v1Flag, v2Flags) {
+    if (!Array.isArray(v2Flags) || !v2Flags.length) return true;
+    const v1Issue = (v1Flag.issue || '').toLowerCase().trim();
+    if (!v1Issue) return true;
+    return !v2Flags.some(v2f => {
+      const v2Issue = (v2f.issue || '').toLowerCase().trim();
+      if (!v2Issue) return false;
+      // Substring-match in beide richtingen — dekt licht aangepaste herformuleringen.
+      return v1Issue.includes(v2Issue) || v2Issue.includes(v1Issue);
+    });
+  }
+
+  function renderVerdict(data) {
+    const wrap = document.getElementById('w-verdict-wrap');
+    const bar = document.getElementById('w-verdict');
+    const dot = document.getElementById('w-verdict-dot');
+    const title = document.getElementById('w-verdict-title');
+    const summary = document.getElementById('w-verdict-summary');
+    const publishBtn = document.getElementById('w-publish-btn');
+
+    const verdict = data.verdict || 'orange';
+    bar.className = 'verdict-bar ' + verdict;
+    dot.className = 'verdict-dot ' + verdict;
+    const meta = VERDICT_TEXT[verdict] || VERDICT_TEXT.orange;
+    title.textContent = meta.title;
+    summary.textContent = data.summary || meta.hint;
+    publishBtn.style.display = verdict === 'red' ? 'none' : '';
+
+    // Render reports als afvinklijst — gebruik V1 (initialReports) als basis voor wat er
+    // ooit gemeld werd, en V2 (reports) om te bepalen wat is verwerkt vs nog open.
+    const reportsEl = document.getElementById('w-reports');
+    reportsEl.innerHTML = '';
+    const finalReports   = data.reports || {};
+    const initialReports = data.initialReports || null;
+    const isRevised = !!data.revised;
+    // Bron voor de checklist: V1-flags geven 'wat is opgepakt'; bij niet-revised is V1 = V2.
+    const baseReports = initialReports || finalReports;
+
+    Object.keys(baseReports).forEach(role => {
+      const v1Rep = baseReports[role] || {};
+      const v2Rep = finalReports[role] || v1Rep;
+      const v1Flags = Array.isArray(v1Rep.flags) ? v1Rep.flags : [];
+      const v2Flags = Array.isArray(v2Rep.flags) ? v2Rep.flags : [];
+      const item = document.createElement('div');
+      item.className = 'report';
+      const label = ROLE_LABELS[role] || role;
+
+      // Tel hoeveel V1-blockers/revises in V2 zijn opgelost vs nog open
+      const openV1 = v1Flags.filter(f => f.severity === 'blocker' || f.severity === 'revise');
+      const stillOpenInV2 = openV1.filter(f => !isFlagResolved(f, v2Flags));
+      const resolvedCount = openV1.length - stillOpenInV2.length;
+      const optCount = v1Flags.filter(f => f.severity === 'optional').length;
+
+      // Header-icoon
+      const headerIcon = stillOpenInV2.length ? '⚠️' : '✓';
+      const headerColor = stillOpenInV2.length ? '#E67E22' : '#27AE60';
+      const headerParts = [];
+      if (resolvedCount && isRevised) headerParts.push(resolvedCount + ' verwerkt');
+      if (stillOpenInV2.length) headerParts.push(stillOpenInV2.length + ' nog open');
+      if (optCount) headerParts.push(optCount + ' optioneel');
+      const headerLabel = headerParts.length ? headerParts.join(', ') : 'alles in orde';
+
+      // Body: V1-flags getoond met ✓/⚠ status (verwerkt vs nog open).
+      let bodyHtml = '';
+      if (isRevised && (resolvedCount || stillOpenInV2.length)) {
+        bodyHtml += '<div class="revised-note">De schrijfagent heeft een revisiepoging gedaan op alle onderstaande punten. ✓ = verwerkt in de tekst, ⚠ = nog steeds aandachtspunt na revisie.</div>';
+      }
+      if (v1Flags.length) {
+        bodyHtml += v1Flags.map(f => {
+          const sev = f.severity || 'optional';
+          let icon, statusLabel, color;
+          if (sev === 'optional') {
+            icon = '💡'; statusLabel = 'Optioneel ter overweging'; color = '';
+          } else if (isRevised && isFlagResolved(f, v2Flags)) {
+            icon = '✓'; statusLabel = 'Verwerkt'; color = '#27AE60';
+          } else {
+            icon = '⚠️'; statusLabel = isRevised ? 'Nog open na revisie' : 'Aandachtspunt'; color = '#E67E22';
+          }
+          return '<div class="check-item">' +
+            '<div class="check-icon" style="color:' + color + '">' + icon + '</div>' +
+            '<div class="check-text">' +
+              '<strong>' + escHtml(statusLabel) + ' — ' + escHtml(f.issue || '') + '</strong>' +
+              (f.suggestion ? '<span>' + escHtml(f.suggestion) + '</span>' : '') +
+            '</div>' +
+          '</div>';
+        }).join('');
+      } else {
+        bodyHtml += '<div class="check-empty">✓ Geen opmerkingen — alle checks geslaagd.</div>';
+      }
+
+      item.innerHTML =
+        '<div class="report-header" onclick="toggleReport(this)">' +
+          '<span style="font-size:14px;color:' + headerColor + ';flex-shrink:0;line-height:1">' + headerIcon + '</span>' +
+          '<span class="report-role-tag">' + escHtml(label) + '</span>' +
+          '<span class="report-role"><span class="report-summary">' + escHtml(v2Rep.summary || v1Rep.summary || '') + '</span></span>' +
+          '<span style="color:var(--mid-grey);font-size:12px;white-space:nowrap">' + escHtml(headerLabel) + '</span>' +
+        '</div>' +
+        '<div class="report-body">' + bodyHtml + '</div>';
+
+      reportsEl.appendChild(item);
+    });
+
+    wrap.style.display = '';
+  }
+
+  function toggleReport(header) {
+    header.nextElementSibling.classList.toggle('open');
+  }
+
+  async function publishPage(btn) {
+    if (!lastPage) { setStatus('w-status', 'Geen pagina om te publiceren.', 'error'); return; }
+    if (lastVerdict === 'red') { setStatus('w-status', 'Rode output kan niet gepubliceerd worden.', 'error'); return; }
+    btn.disabled = true;
+    btn.textContent = 'Publiceren…';
+    try {
+      const res = await fetch('/api/publish', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ page: lastPage, verdict: lastVerdict, pageType: pagetypeValue }),
+      });
+      const data = await parseResponse(res);
+      if (!res.ok || !data.success) throw new Error(data.error || 'Onbekende fout');
+      setStatus('w-status', '✓ Gepubliceerd als concept in het CMS.', 'success');
+      btn.textContent = '✓ Gepubliceerd';
+    } catch (err) {
+      setStatus('w-status', 'Publiceren mislukt: ' + err.message, 'error');
+      btn.disabled = false;
+      btn.textContent = '↑ Publiceer concept';
+    }
+  }
+
+  async function startBulk(btn) {
+    if (bulkRunning) { bulkRunning = false; btn.textContent = 'Start bulk generatie'; return; }
+
+    // Determine source: sheet selector (when present + visible) vs manual textarea
+    const sheetSel  = document.getElementById('m-sheet-selector');
+    const useSheet  = sheetSel && sheetSel.style.display !== 'none';
+    let pages, totalCount;
+
+    if (useSheet) {
+      pages = getSelectedPages();
+      if (!pages.length) { setStatus('m-status', 'Selecteer minimaal één pagina.', 'error'); return; }
+      totalCount = pages.length;
+    } else {
+      const urlsRaw = document.getElementById('m-urls').value.trim();
+      const urls = urlsRaw ? urlsRaw.split('\n').map(u => u.trim()).filter(Boolean) : [];
+      if (!urls.length) { setStatus('m-status', 'Vul minimaal één URL in.', 'error'); return; }
+      const keywords = document.getElementById('m-keywords').value.trim();
+      pages = urls.map(u => ({ url: u, keywords, templateCode: null }));
+      totalCount = urls.length;
+    }
+
+    bulkRunning = true;
+    btn.textContent = 'Stop';
+    document.getElementById('m-results').innerHTML = '';
+    document.getElementById('m-progress').classList.add('show');
+    hideStatus('m-status');
+
+    let completed = [];
+    let consecutiveErrors = 0;
+    const MAX_ERRORS = 3;
+
+    while (bulkRunning) {
+      try {
+        const res = await fetch('/api/migrate', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ pages, completed, batchSize: 3, pageType: migratePagetype }),
+        });
+        const data = await parseResponse(res);
+
+        if (!res.ok) {
+          consecutiveErrors++;
+          if (consecutiveErrors >= MAX_ERRORS) {
+            bulkRunning = false;
+            setStatus('m-status', 'Bulk gestopt na ' + MAX_ERRORS + ' opeenvolgende fouten: ' + (data.error || 'API fout'), 'error');
+            break;
+          }
+          setStatus('m-status', 'Tijdelijke fout (' + consecutiveErrors + '/' + MAX_ERRORS + ') — opnieuw proberen…', 'warn');
+          await new Promise(r => setTimeout(r, 3000 * consecutiveErrors));
+          continue;
+        }
+
+        consecutiveErrors = 0;
+        (data.results || []).forEach(r => addResultItem(r));
+
+        completed = data.completed || [];
+        const pct = totalCount ? Math.round(completed.length / totalCount * 100) : 0;
+        document.getElementById('m-progress-fill').style.width = pct + '%';
+        document.getElementById('m-progress-label').textContent = completed.length + ' van ' + totalCount + ' pagina\'s verwerkt';
+
+        if (data.done) {
+          bulkRunning = false;
+          setStatus('m-status', '✓ Alle pagina\'s verwerkt.', 'success');
+          break;
+        }
+      } catch (err) {
+        consecutiveErrors++;
+        if (consecutiveErrors >= MAX_ERRORS) {
+          bulkRunning = false;
+          setStatus('m-status', 'Bulk gestopt na ' + MAX_ERRORS + ' opeenvolgende fouten: ' + err.message, 'error');
+          break;
+        }
+        setStatus('m-status', 'Tijdelijke fout (' + consecutiveErrors + '/' + MAX_ERRORS + ') — opnieuw proberen…', 'warn');
+        await new Promise(r => setTimeout(r, 3000 * consecutiveErrors));
+      }
+    }
+
+    btn.textContent = 'Start bulk generatie';
+    bulkRunning = false;
+  }
+
+  function addResultItem(r) {
+    const list = document.getElementById('m-results');
+    const item = document.createElement('div');
+    item.className = 'result-item';
+    const rawMd = r.success ? (r.content || '') : '';
+    const bodyContent = r.success ? renderMd(rawMd) : escHtml(r.error || 'Onbekende fout');
+    // Per-pagina warnings (bron-fetch faal, consolidate-fout) — apart blokje boven de content.
+    const warnBlock = (r.success && Array.isArray(r.warnings) && r.warnings.length)
+      ? '<div class="status-bar show warn" style="margin:0 0 12px 0;white-space:pre-line">' + r.warnings.map(w => '⚠ ' + escHtml(w)).join('\n') + '</div>'
+      : '';
+    // Meta-velden (title/description/slug) — inline boven de content voor snelle controle.
+    const p = (r.page || {});
+    const mt = p.meta_title || p.title || '';
+    const md = p.meta_description || '';
+    const sl = p.slug || '';
+    const metaBlock = (r.success && (mt || md || sl))
+      ? '<div style="background:var(--off-white);border:1px solid var(--light-grey);border-radius:6px;padding:10px 14px;margin:0 0 12px 0;font-size:12px;line-height:1.6">'
+        + (mt ? '<div><strong style="color:var(--mid-grey);text-transform:uppercase;letter-spacing:0.06em;font-size:10px">Meta title</strong> <span style="color:var(--mid-grey);font-size:10px">(' + mt.length + '/60)</span><br>' + escHtml(mt) + '</div>' : '')
+        + (md ? '<div style="margin-top:6px"><strong style="color:var(--mid-grey);text-transform:uppercase;letter-spacing:0.06em;font-size:10px">Meta description</strong> <span style="color:var(--mid-grey);font-size:10px">(' + md.length + '/155)</span><br>' + escHtml(md) + '</div>' : '')
+        + (sl ? '<div style="margin-top:6px"><strong style="color:var(--mid-grey);text-transform:uppercase;letter-spacing:0.06em;font-size:10px">Slug</strong><br><code>' + escHtml(sl) + '</code></div>' : '')
+        + '</div>'
+      : '';
+    item.innerHTML = `
+      <div class="result-item-header" onclick="toggleResult(this)">
+        <div class="result-dot ${r.success ? 'ok' : 'err'}"></div>
+        <div class="result-url">${r.url}</div>
+        <span style="color:var(--mid-grey);font-size:12px">${r.success ? (r.warnings && r.warnings.length ? '⚠ Gegenereerd met waarschuwing' : '✓ Gegenereerd') : '✗ Mislukt'} — klik om te bekijken</span>
+      </div>
+      <div class="result-body" data-raw="${escHtml(rawMd)}">${warnBlock}${metaBlock}${bodyContent}</div>`;
+    // Kopieer-knop: standaard markdown, met TSV-fallback voor bulk-import in CMS.
+    if (r.success) {
+      const header = item.querySelector('.result-item-header');
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'btn-secondary';
+      copyBtn.style.cssText = 'padding:3px 10px;font-size:11px;margin-left:auto;flex-shrink:0';
+      copyBtn.textContent = 'Kopieer';
+      copyBtn.title = 'Kopieer als rich text (echte hyperlinks in CMS) + markdown-fallback';
+      copyBtn.onclick = e => { e.stopPropagation(); copyRichOrMd(rawMd); copyBtn.textContent = '✓'; setTimeout(() => copyBtn.textContent = 'Kopieer', 1500); };
+      header.appendChild(copyBtn);
+      if (mt || md || sl) {
+        const tsvBtn = document.createElement('button');
+        tsvBtn.className = 'btn-secondary';
+        tsvBtn.style.cssText = 'padding:3px 10px;font-size:11px;flex-shrink:0';
+        tsvBtn.textContent = 'Kopieer TSV';
+        tsvBtn.title = 'URL + meta-velden + content als TSV-rij — direct te plakken in Excel voor bulk-import';
+        tsvBtn.onclick = e => {
+          e.stopPropagation();
+          const tsv = [r.url, mt, md, sl, rawMd.replace(/\t/g, ' ').replace(/\n/g, '\\n')].join('\t');
+          navigator.clipboard.writeText(tsv);
+          tsvBtn.textContent = '✓';
+          setTimeout(() => tsvBtn.textContent = 'Kopieer TSV', 1500);
+        };
+        header.appendChild(tsvBtn);
+      }
+    }
+    list.appendChild(item);
+  }
+  function toggleResult(header) {
+    header.nextElementSibling.classList.toggle('open');
+  }
+
+  async function startRedirects(btn) {
+    const oldRaw = document.getElementById('r-old').value.trim();
+    const newRaw = document.getElementById('r-new').value.trim();
+    const oldUrls = oldRaw.split('\n').map(u => u.trim()).filter(Boolean);
+    const newUrls = newRaw.split('\n').map(u => u.trim()).filter(Boolean);
+    if (!oldUrls.length || !newUrls.length) { setStatus('r-status', 'Vul zowel oude als nieuwe URL\'s in.', 'error'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Bezig…';
+    setStatus('r-status', 'Agent matcht de URL\'s — dit kan even duren…', 'info');
+    document.getElementById('r-results').innerHTML = '';
+
+    try {
+      const res = await fetch('/api/redirects', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ oldUrls, newUrls, permanent: redirectPermanent }),
+      });
+      const data = await parseResponse(res);
+      if (!res.ok) throw new Error(data.error || 'API fout');
+
+      const table = document.createElement('table');
+      table.className = 'redirect-table';
+      table.innerHTML = `<tr><th>Van</th><th>Naar</th><th>Zekerheid</th></tr>` +
+        (data.redirects || []).map(r => {
+          const conf = r.confidence >= 80 ? 'high' : r.confidence >= 50 ? 'mid' : 'low';
+          return `<tr><td>${r.from}</td><td>${r.to}</td><td class="conf-${conf}">${r.confidence}%</td></tr>`;
+        }).join('');
+      document.getElementById('r-results').appendChild(table);
+
+      const dl = document.createElement('div');
+      dl.style.marginTop = '12px';
+      dl.innerHTML = `<button class="btn-secondary" onclick="downloadRedirects()">↓ Download vercel.json</button>`;
+      document.getElementById('r-results').appendChild(dl);
+      window._redirectContent = data.content;
+      window._redirectFilename = data.filename || 'vercel-redirects.json';
+
+      if (data.unmatched && data.unmatched.length) {
+        setStatus('r-status', `✓ ${data.redirects.length} redirects gegenereerd. ${data.unmatched.length} URL's konden niet worden gematcht.`, 'success');
+      } else {
+        setStatus('r-status', `✓ ${data.redirects.length} redirects gegenereerd.`, 'success');
+      }
+    } catch (err) {
+      setStatus('r-status', 'Fout: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Genereer redirect-map';
+    }
+  }
+
+  function downloadRedirects() {
+    const blob = new Blob([window._redirectContent], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = window._redirectFilename;
+    a.click();
+  }
+
+  async function startExport(btn) {
+    btn.disabled = true;
+    btn.textContent = 'Exporteren…';
+    setStatus('ex-status', 'CMS-data ophalen…', 'info');
+
+    try {
+      const res = await fetch('/api/cms-export', { method: 'POST', headers: authHeaders(), body: JSON.stringify({}) });
+      const data = await parseResponse(res);
+      if (!res.ok) throw new Error(data.error || 'API fout');
+
+      const bytes = atob(data.base64);
+      const arr = new Uint8Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+      const blob = new Blob([arr], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = data.filename || 'cms-export.xlsx';
+      a.click();
+
+      setStatus('ex-status', `✓ ${data.rows} items geëxporteerd.`, 'success');
+    } catch (err) {
+      setStatus('ex-status', 'Fout: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Exporteer CMS naar Excel';
+    }
+  }
+
+  async function startImport(btn) {
+    const file = document.getElementById('imp-file').files[0];
+    if (!file) { setStatus('imp-status', 'Selecteer een bestand.', 'error'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Importeren…';
+    document.getElementById('imp-progress').classList.add('show');
+    setStatus('imp-status', 'Bestand inlezen…', 'info');
+
+    const isCsv = file.name.endsWith('.csv');
+    const mimeType = isCsv ? 'csv' : 'excel';
+    let fileData;
+
+    if (isCsv) {
+      fileData = await file.text();
+    } else {
+      const buf = await file.arrayBuffer();
+      fileData = btoa(String.fromCharCode(...new Uint8Array(buf)));
+    }
+
+    let completed = [];
+    let done = false;
+
+    while (!done) {
+      try {
+        const res = await fetch('/api/cms-import', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ data: fileData, mimeType, operation: importOp, completed, batchSize: 10 }),
+        });
+        const data = await parseResponse(res);
+        if (!res.ok) throw new Error(data.error || 'API fout');
+
+        completed = data.completed || [];
+        const total = data.progress?.total || 1;
+        const pct = Math.round(completed.length / total * 100);
+        document.getElementById('imp-progress-fill').style.width = pct + '%';
+        document.getElementById('imp-progress-label').textContent = completed.length + ' van ' + total + ' rijen verwerkt';
+
+        if (data.done) {
+          done = true;
+          setStatus('imp-status', `✓ Import voltooid. ${completed.length} rijen verwerkt.`, 'success');
+        }
+      } catch (err) {
+        setStatus('imp-status', 'Fout: ' + err.message, 'error');
+        break;
+      }
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Start import';
+  }
+</script>
+</body>
+</html>

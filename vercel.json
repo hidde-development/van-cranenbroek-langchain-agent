@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/agent.js": {
+      "maxDuration": 300
+    },
+    "api/migrate.js": {
+      "maxDuration": 300
+    }
+  }
+}

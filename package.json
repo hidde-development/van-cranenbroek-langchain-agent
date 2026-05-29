@@ -1,0 +1,12 @@
+{
+  "name": "van-cranenbroek-content-agent",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "LangChain content agent — gegenereerd door Goldfizh Content Agent Builder",
+  "dependencies": {
+    "@langchain/anthropic": "^0.3.0",
+    "@langchain/core": "^0.3.0",
+    "langchain": "^0.3.0",
+    "zod": "^3.22.0"
+  }
+}
