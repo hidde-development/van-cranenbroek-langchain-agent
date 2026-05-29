@@ -1,6 +1,7 @@
 import { writePageTool } from '../lib/tools/write-page.js';
 import { fetchUrlTool } from '../lib/tools/fetch-url.js';
 import { consolidateTool } from '../lib/tools/consolidate.js';
+import { normalizeUrl } from '../lib/tools/load-knowledge.js';
 
 export const config = { maxDuration: 300 };
 
@@ -70,11 +71,12 @@ export default async function handler(req, res) {
   // Invoerlimieten — voorkomt onverwacht grote Claude-calls en kostenoverschrijding.
   const safeBrief    = String(brief    || "").slice(0, 8000);
   const safeKeywords = String(keywords || "").slice(0, 500);
-  const safeSources  = Array.isArray(sources) ? sources.slice(0, 5) : [];
+  const safeSources  = Array.isArray(sources) ? sources.slice(0, 5).map(normalizeUrl) : [];
+  const safeUrl      = url ? normalizeUrl(url) : url;
 
   try {
-    const { brief: enrichedBrief, failed: sourcesFailed, consolidateFailed } = await prepareBrief({ brief: safeBrief, sources: safeSources, pageType, url });
-    const page = await callWritePage({ brief: enrichedBrief, pageType, url, keywords: safeKeywords, templateCode, style });
+    const { brief: enrichedBrief, failed: sourcesFailed, consolidateFailed } = await prepareBrief({ brief: safeBrief, sources: safeSources, pageType, url: safeUrl });
+    const page = await callWritePage({ brief: enrichedBrief, pageType, url: safeUrl, keywords: safeKeywords, templateCode, style });
     const warnings = [];
     if (sourcesFailed.length) warnings.push("Niet bereikbare bronpagina's (403/timeout/DNS): " + sourcesFailed.join(", "));
     if (consolidateFailed) warnings.push("Consolidatie van bronpagina's mislukt — ruwe inhoud is gebruikt in plaats van AI-samenvatting.");

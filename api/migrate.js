@@ -1,6 +1,7 @@
 import { writePageTool }   from '../lib/tools/write-page.js';
 import { fetchUrlTool }    from '../lib/tools/fetch-url.js';
 import { consolidateTool } from '../lib/tools/consolidate.js';
+import { normalizeUrl }    from '../lib/tools/load-knowledge.js';
 
 export const config = { maxDuration: 300 };
 
@@ -62,12 +63,13 @@ export default async function handler(req, res) {
   const { urls = [], pages = null, completed = [], batchSize = 3, pageType = "dienstpagina", keywords = "" } = req.body || {};
 
   // Normalize: pages[] nemen voorrang; urls[] worden omgezet zonder per-pagina metadata.
+  const normalizedCompleted = Array.isArray(completed) ? completed.map(normalizeUrl) : [];
   const allPages = Array.isArray(pages) && pages.length
-    ? pages
-    : urls.map(u => ({ url: u, keywords, templateCode: null }));
+    ? pages.map(p => ({ ...p, url: normalizeUrl(p.url) }))
+    : urls.map(u => ({ url: normalizeUrl(u), keywords, templateCode: null }));
 
   const allUrls = allPages.map(p => p.url);
-  const remaining = allPages.filter(p => !completed.includes(p.url));
+  const remaining = allPages.filter(p => !normalizedCompleted.includes(p.url));
   // Cap op 5 per batch — voorkomt runaway API-kosten en Vercel-timeout.
   const batch = remaining.slice(0, Math.min(batchSize, 5));
 
